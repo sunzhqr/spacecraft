@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package inventory.v1;
+
+option go_package = "github.com/sunzhqr/spacecraft/shared/pkg/proto/inventory/v1;inventoryv1";
+
+import "google/protobuf/timestamp.proto";
+
+//InventoryService - сервис хранящий информацию о складе и деталях
+service InventoryService {
+  rpc GetPart(GetPartRequest) returns (GetPartResponse);
+  rpc ListParts(ListPartsRequest) returns (ListPartsResponse);
+}
+
+// Category описывает тип/класс складской позиции.
+enum Category {
+    CATEGORY_UNSPECIFIED = 0;
+    CATEGORY_ENGINE = 1;
+    CATEGORY_FUEL = 2;
+    CATEGORY_PORTHOLE = 3;
+    CATEGORY_WING = 4;
+}
+
+// Dimensions описывает физические габариты и массу детали в метрической системе.
+message Dimensions {
+  double length = 1;
+  double width = 2;
+  double height = 3;
+  double weight = 4;
+}
+
+// Manufacturer содержит сведения о производителе детали.
+message Manufacturer {
+  string name = 1;
+  string country = 2;
+  string website = 3;
+}
+
+// Value задаёт денежную стоимость в минорных единицах.
+message Value {
+  oneof method {
+    string string_value = 1;
+    int64 int64_value = 2;
+    double double_value = 3;
+    bool bool_value = 4;
+  }
+}
+
+// Part описывает складскую позицию/деталь.
+message Part {
+   string uuid = 1;
+   string name = 2;
+   string description = 3;
+   double price = 4;
+   int64 stock_quantity = 5;
+   Category category = 6;
+   Dimensions dimensions = 7;
+   Manufacturer manufacturer = 8;
+   repeated string tags = 9;
+   map<string, Value> metadata = 10;
+   google.protobuf.Timestamp created_at = 11;
+   google.protobuf.Timestamp updated_at = 12;
+}
+
+// PartsFilter определяет критерии фильтрации списка деталей.
+message PartsFilter {
+  repeated string uuids = 1;
+  repeated string names = 2;
+  repeated Category categories = 3;
+  repeated string manufacturer_countries = 4;
+  repeated string tags = 5;
+}
+
+// GetPartRequest запрашивает деталь по идентификатору.
+message GetPartRequest {
+  string uuid = 1;
+}
+
+// GetPartResponse содержит найденную деталь.
+message GetPartResponse {
+  Part part = 1;
+}
+
+// ListPartsRequest задаёт параметры получения списка деталей.
+message ListPartsRequest {
+  PartsFilter filter = 1;
+}
+
+// ListPartsResponse возвращает страницу списка деталей.
+message ListPartsResponse {
+  repeated Part parts = 1;
+}
